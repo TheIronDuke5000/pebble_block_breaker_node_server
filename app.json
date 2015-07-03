@@ -1,7 +1,7 @@
 {
-  "name": "Node.js Getting Started",
-  "description": "A barebones Node.js app using Express 4",
-  "repository": "https://github.com/heroku/node-js-getting-started",
-  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "name": "Pebble Block Breaker Server",
+  "description": "A server to store high scores etc. for Block Breaker for Pebble",
+  "repository": "https://github.com/TheIronDuke5000/pebble_block_breaker_node_server",
+  "logo": "https://raw.githubusercontent.com/TheIronDuke5000/Pebble-breakout/master/resources/ball_logo~48~color.png",
   "keywords": ["node", "express", "static"]
 }
