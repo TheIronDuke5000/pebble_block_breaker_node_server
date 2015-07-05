@@ -20,7 +20,7 @@ app.get("/db", function (request, response) {
         console.error(err); response.send("Error " + err);
         response.send("error");
       } else {
-        response.json(result);
+        response.send(result.rows[0].name);
       }
     });
   });
