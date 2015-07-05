@@ -11,14 +11,15 @@
       Leaderboard Name:
       <input type="text" name="name" id="name_textbox" maxlength="20" minLength="4" pattern="[A-Za-z0-9 ]+" placeholder="Name">
     </p>
+
+    <p>
+      <label id="response_label"></label>
+    </p>
  
     <p>
       <button id="save_button">Save</button>
     </p>
 
-    <p>
-      <label id="response_label"></label>
-    </p>
 
 
     <script>
@@ -54,25 +55,26 @@
         }
         var queryJSON = queryStringToJSON();
         queryJSON.name = name;
-
         xmlhttp.open("GET",
                      "/set_name?id=" + queryJSON.id + "&name=" + queryJSON.name + "&account_token=" + queryJSON.account_token, 
-                     false);
-        xmlhttp.send();
-
-        var responseStatusString = "Error";
-        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-          var responseJSON = JSON.parse(xmlhttp.responseText);
-          if (!isStringBlank(responseJSON.id)) {
-            responseStatusString = "Success";
-            var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
-            document.location = location;
-          } else if (!isStringBlank(responseJSON.error)) {
-            responseStatusString = responseJSON.error;
+                     true);
+        xmlhttp.onreadystatechange = function () {
+          var responseStatusString = "Error";
+          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var responseJSON = JSON.parse(xmlhttp.responseText);
+            if (!isStringBlank(responseJSON.name)) {
+              responseStatusString = "Success";
+              var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
+              document.location = location;
+            } else if (!isStringBlank(responseJSON.error)) {
+              responseStatusString = responseJSON.error;
+            }
           }
+          console.log(responseStatusString);
+          document.getElementById("response_label").innerHTML = responseStatusString;
         }
-        console.log(responseStatusString);
-        document.getElementById("response_label").value = responseStatusString;
+
+        xmlhttp.send();
       }, false);
     </script>
   </body>
