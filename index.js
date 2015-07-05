@@ -15,12 +15,8 @@ app.listen(app.get("port"), function() {
 
 var pool = anyDB.getPool(process.env.DATABASE_URL, {
     min: 0,  // Minimum connections
-    max: 10, // Maximum connections
-    reset: function (conn, done) {
-      conn.query('ROLLBACK', done);
-      console.log('Connection returned to pool');
-    }
-})
+    max: 10 // Maximum connections
+});
 
 
 
