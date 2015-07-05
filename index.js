@@ -1,7 +1,8 @@
 var express = require("express");
 var app = express();
-var mysql = require("mysql");
-var pg = require("pg");
+// var mysql = require("mysql");
+// var pg = require("pg");
+var anyDB = require('any-db')
 var cool = require("cool-ascii-faces");
 
 app.use(express.static(__dirname + "/public"));
@@ -12,17 +13,25 @@ app.listen(app.get("port"), function() {
   console.log("Node app is running on port:" + app.get("port"))
 });
 
+var pool = anyDB.getPool(process.env.DATABASE_URL, {
+    min: 0,  // Minimum connections
+    max: 10, // Maximum connections
+    reset: function (conn, done) {
+      conn.query('ROLLBACK', done);
+      console.log('Connection returned to pool');
+    }
+})
+
+
+
 app.get("/db", function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    client.query("select * from users;", function(err, result) {
-      // done();
-      if (err) {
-        console.error(err); response.send("Error " + err);
-        response.send("error");
-      } else {
-        response.send(result.rows[0].name);
-      }
-    });
+  pool.query("select * from users;", function(err, result) {
+    if (err) {
+      console.error(err); response.send("Error " + err);
+      response.send("error");
+    } else {
+      response.send(result.rows[0].name);
+    }
   });
 });
 
