@@ -20,7 +20,7 @@ app.get("/db", function (request, response) {
         console.error(err); response.send("Error " + err);
         response.send("error");
       } else {
-        response.send("pages/db" + String(result) );
+        response.send("pages/db" + String(result.name) );
       }
     });
   });
