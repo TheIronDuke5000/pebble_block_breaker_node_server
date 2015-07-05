@@ -22,7 +22,7 @@ var pool = anyDB.createPool(process.env.DATABASE_URL, {
 });
 
 function isStringBlank(str){
-    return str === null || str.match(/^\s*$/) !== null;
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
 app.get("/db", function (request, response) {
@@ -37,7 +37,7 @@ app.get("/db", function (request, response) {
 });
 
 app.get("/set_name", function(request, response) {
-  if (request.query.id != null && isStringBlank(request.query.name)) {
+  if (request.query.id === null || request.query.id === undefined || isStringBlank(request.query.name)) {
     response.json({error: "Improper query string"});
     return;
   }
@@ -58,7 +58,7 @@ app.get("/set_name", function(request, response) {
              function(err, result) {
     if (err) {
       console.error(err);
-      response.json({error: "sql error. oops"});
+      response.json({error: "sql error 1. oops"});
       return;
     } else if (result.rows.length > 0) {
       name_in_use_by_id = result.rows[0].id;
@@ -69,7 +69,7 @@ app.get("/set_name", function(request, response) {
                function(err, result) {
       if (err) {
         console.error(err);
-        response.json({error: "sql error. oops"});
+        response.json({error: "sql error 2. oops"});
       } else if (result.rows.length > 0 && (name_in_use_by_id == 0 || name_in_use_by_id == result.rows[0].id)) {
         // change name
         if (isStringBlank(account_token)) {
@@ -79,7 +79,7 @@ app.get("/set_name", function(request, response) {
                    "' where id=" + result.rows[0].id + " returning *;", function(err, updateResult) {
           if (err) {
             console.error(err);
-            response.json({error: "sql error. oops"});
+            response.json({error: "sql error 3. oops"});
           } else {
             response.json({
               id: updateResult.rows[0].id,
@@ -94,7 +94,7 @@ app.get("/set_name", function(request, response) {
                     newName + "', '" + account_token + "') returning *;", function(err, insertResult) {
           if (err) {
             console.error(err);
-            response.json({error: "sql error. oops"});
+            response.json({error: "sql error 4. oops"});
           } else {
             response.json({
               id: insertResult.rows[0].id,
