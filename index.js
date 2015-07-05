@@ -65,7 +65,7 @@ app.get("/set_name", function(request, response) {
     }
 
     pool.query("select * from users where (account_token<>'' and account_token='" + account_token + 
-               "') or id=" + request.query.id +");",
+               "') or id=" + request.query.id +";",
                function(err, result) {
       if (err) {
         console.error(err);
