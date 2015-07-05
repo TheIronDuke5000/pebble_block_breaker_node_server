@@ -9,37 +9,74 @@
  
     <p>
       Leaderboard Name:
-      <input type="text" name="name" id="name_textbox" maxlength="20" placeholder="Name">
+      <input type="text" name="name" id="name_textbox" maxlength="20" minLength="4" pattern="[A-Za-z0-9 ]+" placeholder="Name">
     </p>
  
     <p>
-    <button id="save_button">Save</button>
+      <button id="save_button">Save</button>
+    </p>
+
+    <p>
+      <label id="response_label"></label>
     </p>
 
 
     <script>
       //Setup to allow easy adding more options later
-      function saveOptions() {
-        var nameTextbox = document.getElementById("name_textbox");
-     
-        var options = {
-          "name": nameTextbox.value
-        };
+      function queryStringToJSON() {            
+        var pairs = location.search.slice(1).split('&');
         
-        return options;
-      };
-     
+        var result = {};
+        pairs.forEach(function(pair) {
+          pair = pair.split('=');
+          result[pair[0]] = decodeURIComponent(pair[1] || '');
+        });
+
+        return JSON.parse(JSON.stringify(result));
+      }
+
       var submitButton = document.getElementById("save_button");
-      submitButton.addEventListener("click", 
-        function() {
-          console.log("Submit");
-     
-          var options = saveOptions();
-          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(options));
-           
+      submitButton.addEventListener("click", function() {
+        console.log("Submit");
+
+        var nameTextbox = document.getElementById("name_textbox");
+        var name = nameTextbox.value.trim();
+        
+        var xmlhttp;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp = new XMLHttpRequest();
+        } else {// code for IE6, IE5
+          xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        var queryJSON = queryStringToJSON();
+        queryJSON.name = name;
+
+        xmlhttp.open("GET",
+                     "/set_name?peb_account_token=" + queryJSON.peb_account_token + "&id=" + queryJSON.id + "&name=" + queryJSON.name, 
+                     false);
+        xmlhttp.send();
+
+        var responseStatusString;
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+          responseStatusString = "Success. Settings changed.";
+          var responseJSON = JSON.parse(xmlhttp.responseText);
+        } else {
+          var errorText = "";
+          if (xmlhttp.responseText != NULL) {
+            errorText = xmlhttp.responseText;
+          }
+
+          responseStatusString = "Failed to change settings." + errorText;
+        }
+        console.log(responseStatusString);
+        document.getElementById("response_label").value = responseStatusString;
+
+        window.setTimeout(function () {
+          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(queryJSON));
           document.location = location;
-        }, 
-      false);
+        },1000);
+
+      }, false);
     </script>
   </body>
 </html>
