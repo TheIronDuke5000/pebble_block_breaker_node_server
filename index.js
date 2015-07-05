@@ -13,7 +13,7 @@ app.listen(app.get("port"), function() {
   console.log("Node app is running on port:" + app.get("port"))
 });
 
-var pool = anyDB.getPool(process.env.DATABASE_URL, {
+var pool = anyDB.createPool(process.env.DATABASE_URL, {
     min: 0,  // Minimum connections
     max: 10 // Maximum connections
 });
