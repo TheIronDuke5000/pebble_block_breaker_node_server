@@ -14,17 +14,17 @@ app.listen(app.get("port"), function() {
 });
 
 app.get("/db", function (request, response) {
-  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-    response.send("asdfdf");
-    // client.query("select * users;", function(err, result) {
-    //   // done();
-    //   // if (err) {
-    //   //   console.error(err); response.send("Error " + err);
-    //   // } else {
-    //   //   response.send("pages/db" + result[0].name );
-    //   // }
-    // });
-  });
+  response.send("asdfdf");
+  // pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+  //   client.query("select * users;", function(err, result) {
+  //     // done();
+  //     // if (err) {
+  //     //   console.error(err); response.send("Error " + err);
+  //     // } else {
+  //     //   response.send("pages/db" + result[0].name );
+  //     // }
+  //   });
+  // });
 });
 
 app.get("/set_name", function(request, response) {
