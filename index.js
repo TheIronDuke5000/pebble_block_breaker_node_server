@@ -16,6 +16,7 @@ app.listen(app.get("port"), function() {
 app.get("/db", function (request, response) {
   pg.connect(process.env.DATABASE_URL, function(err, client, done) {
     client.query("select * users;", function(err, result) {
+      response.send("asdfdf");
       done();
       if (err) {
         console.error(err); response.send("Error " + err);
