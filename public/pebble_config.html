@@ -52,7 +52,7 @@
         queryJSON.name = name;
 
         xmlhttp.open("GET",
-                     "/set_name?peb_account_token=" + queryJSON.peb_account_token + "&id=" + queryJSON.id + "&name=" + queryJSON.name, 
+                     "/set_name?account_token=" + queryJSON.account_token + "&id=" + queryJSON.id + "&name=" + queryJSON.name, 
                      false);
         xmlhttp.send();
 
