@@ -17,12 +17,12 @@ app.listen(app.get("port"), function() {
 });
 
 var pool = anyDB.createPool(process.env.DATABASE_URL, {
-    min: 0,  // Minimum connections
-    max: 10 // Maximum connections
+  min: 0,  // Minimum connections
+  max: 10 // Maximum connections
 });
 
 function isStringBlank(str){
-    return str === undefined || str === null || str.match(/^\s*$/) !== null;
+  return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
 app.get("/db", function (request, response) {
@@ -70,7 +70,10 @@ app.get("/set_name", function(request, response) {
       if (err) {
         console.error(err);
         response.json({error: "sql error 2. oops"});
-      } else if (result.rows.length > 0 && (name_in_use_by_id == 0 || name_in_use_by_id == result.rows[0].id)) {
+      } else if (result.rows.length > 1) {
+        // shit
+        response.json({error: "sql error 2b. oops"});
+      } else if (result.rows.length == 1 && (name_in_use_by_id == 0 || name_in_use_by_id == result.rows[0].id)) {
         // change name
         if (isStringBlank(account_token)) {
           account_token = result.rows[0].account_token;

@@ -35,6 +35,10 @@
         return JSON.parse(JSON.stringify(result));
       }
 
+      function isStringBlank(str){
+        return str === undefined || str === null || str.match(/^\s*$/) !== null;
+      }
+
       var submitButton = document.getElementById("save_button");
       submitButton.addEventListener("click", function() {
         console.log("Submit");
@@ -52,30 +56,23 @@
         queryJSON.name = name;
 
         xmlhttp.open("GET",
-                     "/set_name?account_token=" + queryJSON.account_token + "&id=" + queryJSON.id + "&name=" + queryJSON.name, 
+                     "/set_name?id=" + queryJSON.id + "&name=" + queryJSON.name + "&account_token=" + queryJSON.account_token, 
                      false);
         xmlhttp.send();
 
-        var responseStatusString;
+        var responseStatusString = "Error";
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-          responseStatusString = "Success. Settings changed.";
           var responseJSON = JSON.parse(xmlhttp.responseText);
-        } else {
-          var errorText = "";
-          if (xmlhttp.responseText != NULL) {
-            errorText = xmlhttp.responseText;
+          if (!isStringBlank(responseJSON.id)) {
+            responseStatusString = "Success";
+            var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
+            document.location = location;
+          } else if (!isStringBlank(responseJSON.error)) {
+            responseStatusString = responseJSON.error;
           }
-
-          responseStatusString = "Failed to change settings." + errorText;
         }
         console.log(responseStatusString);
         document.getElementById("response_label").value = responseStatusString;
-
-        window.setTimeout(function () {
-          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(queryJSON));
-          document.location = location;
-        },1000);
-
       }, false);
     </script>
   </body>
