@@ -119,13 +119,14 @@ app.get("/set_name", function(request, response) {
 
 app.get("/update_scores", function (request, response) {
   if (request.query.id === null || request.query.id === undefined || 
-      request.query.scores === null || request.query.scores === undefined || request.query.scores.length == 0) {
+      request.query.scores === null || request.query.scores === undefined) {
     response.json({error: "Improper query string"});
     return;
   }
   var scores = JSON.parse(request.query.scores);
-  response.json(scores);
-  return;
+  if (scores.length <= 0) {
+    response.json({error: "Improper query string"});
+  }
   for (var i = 0; i < scores.length; i++) {
     if (scores[i].score === null || scores[i].score === undefined ||
         scores[i].level === null || scores[i].level === undefined ||
