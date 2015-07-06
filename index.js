@@ -153,8 +153,8 @@ app.get("/update_scores", function (request, response) {
       console.error(err);
       response.json({error: "sql error 1. oops"});
     } else if (result.rows.length > 0) {
-      var insertQueryString = "insert into users (user_id, score, datetime, level) values ";
-      var deleteQueryString = "delete from users where user_id=" + request.query.id + " and datetime in (";
+      var insertQueryString = "insert into scores (user_id, score, datetime, level) values ";
+      var deleteQueryString = "delete from scores where user_id=" + request.query.id + " and datetime in (";
 
       for (var i = 0; i < scores.length; i++) {
         insertQueryString = insertQueryString + "(" + result.rows[0].id + ", " + 
