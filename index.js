@@ -124,7 +124,9 @@ app.get("/update_scores", function (request, response) {
     return;
   }
   var scores = request.query.scores;
-  for (var i = 0; i < request.query.scores.length; i++) {
+  response.json(scores);
+  return;
+  for (var i = 0; i < scores.length; i++) {
     if (scores[i].score === null || scores[i].score === undefined ||
         scores[i].level === null || scores[i].level === undefined ||
         scores[i].datetime === null || scores[i].datetime === undefined) {
