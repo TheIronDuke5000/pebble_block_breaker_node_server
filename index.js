@@ -123,8 +123,15 @@ app.get("/update_scores", function (request, response) {
     response.json({error: "Improper query string"});
     return;
   }
-
   var scores = request.query.scores;
+  for (var i = 0; i < request.query.scores.length; i++) {
+    if (scores[i].score === null || scores[i].score === undefined ||
+        scores[i].level === null || scores[i].level === undefined ||
+        scores[i].datetime === null || scores[i].datetime === undefined) {
+      response.json({error: "Improper query string"});
+      return;
+    }
+  }
 
   var account_token = "";
   if (!isStringBlank(request.query.account_token)) {
