@@ -123,7 +123,7 @@ app.get("/update_scores", function (request, response) {
     response.json({error: "Improper query string"});
     return;
   }
-  var scores = request.query.scores;
+  var scores = JSON.parse(request.query.scores);
   response.json(scores);
   return;
   for (var i = 0; i < scores.length; i++) {
