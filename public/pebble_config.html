@@ -13,7 +13,7 @@
     </p>
 
     <p>
-      <label id="response_label"></label>
+      <label id="response_label" style="color: red;"></label>
     </p>
  
     <p>
@@ -40,42 +40,52 @@
         return str === undefined || str === null || str.match(/^\s*$/) !== null;
       }
 
-      var submitButton = document.getElementById("save_button");
-      submitButton.addEventListener("click", function() {
-        console.log("Submit");
+      window.onload = function () {
 
         var nameTextbox = document.getElementById("name_textbox");
-        var name = nameTextbox.value.trim();
-        
-        var xmlhttp;
-        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-          xmlhttp = new XMLHttpRequest();
-        } else {// code for IE6, IE5
-          xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
         var queryJSON = queryStringToJSON();
-        queryJSON.name = name;
-        xmlhttp.open("GET",
-                     "/set_name?id=" + queryJSON.id + "&name=" + queryJSON.name + "&account_token=" + queryJSON.account_token, 
-                     true);
-        xmlhttp.onreadystatechange = function () {
-          var responseStatusString = "Error";
-          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var responseJSON = JSON.parse(xmlhttp.responseText);
-            if (!isStringBlank(responseJSON.name)) {
-              responseStatusString = "Success";
-              var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
-              document.location = location;
-            } else if (!isStringBlank(responseJSON.error)) {
-              responseStatusString = responseJSON.error;
-            }
-          }
-          console.log(responseStatusString);
-          document.getElementById("response_label").innerHTML = responseStatusString;
+
+        if (!isStringBlank(queryJSON.name)) {
+          nameTextbox.value = queryJSON.name;
         }
 
-        xmlhttp.send();
-      }, false);
+        var submitButton = document.getElementById("save_button");
+        submitButton.addEventListener("click", function() {
+          console.log("Submit");
+          
+          var name = nameTextbox.value.trim();
+          
+          var xmlhttp;
+          if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp = new XMLHttpRequest();
+          } else {// code for IE6, IE5
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+          }
+          
+          queryJSON.name = name;
+          xmlhttp.open("GET",
+                       "/set_name?id=" + queryJSON.id + "&name=" + queryJSON.name + "&account_token=" + queryJSON.account_token, 
+                       true);
+          xmlhttp.onreadystatechange = function () {
+            var responseStatusString = "Error";
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+              var responseJSON = JSON.parse(xmlhttp.responseText);
+              if (!isStringBlank(responseJSON.name)) {
+                responseStatusString = "Success";
+                var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
+                document.location = location;
+              } else if (!isStringBlank(responseJSON.error)) {
+                responseStatusString = responseJSON.error;
+              }
+            }
+            console.log(responseStatusString);
+            document.getElementById("response_label").innerHTML = responseStatusString;
+          }
+
+          xmlhttp.send();
+        }, false);
+      };
+
     </script>
   </body>
 </html>

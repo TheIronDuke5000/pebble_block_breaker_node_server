@@ -25,19 +25,20 @@ function isStringBlank(str){
   return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
-app.get("/db", function (request, response) {
-  pool.query("select * from users;", function(err, result) {
-    if (err) {
-      console.error(err);
-      response.json({error: "sql error. oops"});
-    } else {
-      response.send(result.rows[0].name);
-    }
-  });
-});
+// app.get("/db", function (request, response) {
+//   pool.query("select * from users;", function(err, result) {
+//     if (err) {
+//       console.error(err);
+//       response.json({error: "sql error. oops"});
+//     } else {
+//       response.send(result.rows[0].name);
+//     }
+//   });
+// });
 
 app.get("/set_name", function(request, response) {
-  if (request.query.id === null || request.query.id === undefined || isStringBlank(request.query.name)) {
+  if (request.query.id === null || request.query.id === undefined ||
+      isStringBlank(request.query.name)) {
     response.json({error: "Improper query string"});
     return;
   }
@@ -48,14 +49,20 @@ app.get("/set_name", function(request, response) {
     return;
   }
 
+
   var account_token = "";
   if (!isStringBlank(request.query.account_token)) {
     account_token = request.query.account_token;
   }
 
+  // TODO: figure out a way to sanitize the account token without destroying it. 
+  // if it is left as is the server is vulnerable to SQL injection.
+  // but i dont know the format of the account token so that i dont destroy it
+  // this is a temporary fix that assumes that the token string is alphanumeric
+  account_token = account_token.replace(/[^A-Za-z0-9 ]/g, "");
+
   var name_in_use_by_id = 0;
-  pool.query("select id from users where name='" + newName + "';",
-             function(err, result) {
+  pool.query("select id from users where name='" + newName + "';", function(err, result) {
     if (err) {
       console.error(err);
       response.json({error: "sql error 1. oops"});
@@ -64,16 +71,12 @@ app.get("/set_name", function(request, response) {
       name_in_use_by_id = result.rows[0].id;
     }
 
-    pool.query("select * from users where (account_token<>'' and account_token='" + account_token + 
-               "') or id=" + request.query.id +";",
-               function(err, result) {
+    pool.query("select * from users where (account_token<>'' and account_token='" + account_token +
+               "') or id=" + request.query.id +";", function(err, result) {
       if (err) {
         console.error(err);
         response.json({error: "sql error 2. oops"});
-      } else if (result.rows.length > 1) {
-        // shit
-        response.json({error: "sql error 2b. oops"});
-      } else if (result.rows.length == 1 && (name_in_use_by_id == 0 || name_in_use_by_id == result.rows[0].id)) {
+      } else if (result.rows.length > 0 && (name_in_use_by_id == 0 || name_in_use_by_id == result.rows[0].id)) {
         // change name
         if (isStringBlank(account_token)) {
           account_token = result.rows[0].account_token;
@@ -112,3 +115,84 @@ app.get("/set_name", function(request, response) {
     });
   });
 });
+
+
+app.get("/update_scores", function (request, response) {
+  if (request.query.id === null || request.query.id === undefined || 
+      request.query.scores === null || request.query.scores === undefined || request.query.scores.length == 0) {
+    response.json({error: "Improper query string"});
+    return;
+  }
+
+  var scores = request.query.scores;
+
+  var account_token = "";
+  if (!isStringBlank(request.query.account_token)) {
+    account_token = request.query.account_token;
+  }
+
+  // TODO: figure out a way to sanitize the account token without destroying it. 
+  // if it is left as is the server is vulnerable to SQL injection.
+  // but i dont know the format of the account token so that i dont destroy it
+  // this is a temporary fix that assumes that the token string is alphanumeric
+  account_token = account_token.replace(/[^A-Za-z0-9 ]/g, "");
+
+  pool.query("select * from users where (account_token<>'' and account_token='" + account_token +
+             "') or id=" + request.query.id +";", function(err, result) {
+    if (err) {
+      console.error(err);
+      response.json({error: "sql error 1. oops"});
+    } else if (result.rows.length > 0) {
+      var insertQueryString = "insert into users (user_id, score, datetime, level) values ";
+      var deleteQueryString = "delete from users where user_id=" + result.query.id + " and datetime in (";
+
+      for (var i = 0; i < scores.length; i++) {
+        insertQueryString = insertQueryString + "(" + result.rows[0].id + ", " + 
+                      scores[i].score + ", " + scores[i].datetime + ", " + scores[i].level + ")";
+        deleteQueryString = deleteQueryString + scores[i].datetime;
+        if (i+1 != scores.length) {
+          insertQueryString = insertQueryString + ", ";
+          deleteQueryString = deleteQueryString + ", ";
+        }
+      }
+
+      // insertQueryString = insertQueryString + "";
+      deleteQueryString = deleteQueryString + ");"
+
+      pool.query(deleteQueryString, function(err, deleteResult) {
+        if (err) {
+          console.error(err);
+          response.json({error: "sql error 2. oops"});
+        }
+        pool.query(insertQueryString, function(err, insertResult) {
+          if (err) {
+            console.error(err);
+            response.json({error: "sql error 3. oops"});
+          } else {
+            var num_high_scores = 5;
+            pool.query("select s.score, s.level, s.datetime, u.name " +
+                       "from scores as s, users as u where " +
+                       "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";", 
+                       function (err, selectResult) {
+              if (err) {
+                console.error(err);
+                response.json({error: "sql error 4. oops"});
+              } else {
+                var scoresFlatJSON = {};
+                for (var i = 0; i < num_high_scores; i++) {
+                  scoresFlatJSON[i] = selectResult.rows[i];
+                }
+                response.json(scoresFlatJSON);
+              }
+            });
+          }
+        });
+      });
+    } else {
+      // failure. just do nothing
+      response.json({error: "The pebble account token was not found in the database."});
+    }
+  });
+});
+
+
