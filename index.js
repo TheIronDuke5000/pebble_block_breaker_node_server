@@ -188,11 +188,12 @@ app.get("/update_scores", function (request, response) {
                 console.error(err);
                 response.json({error: "sql error 4. oops"});
               } else {
-                var scoresFlatJSON = {};
+                var scoresJSON = {};
+                scoresJSON.scores = [];
                 for (var i = 0; i < num_high_scores; i++) {
-                  scoresFlatJSON[i] = selectResult.rows[i];
+                  scoresJSON.scores[i] = selectResult.rows[i];
                 }
-                response.json(scoresFlatJSON);
+                response.json(scoresJSON);
               }
             });
           }
