@@ -9,7 +9,7 @@
  
     <p>
       Leaderboard Name:
-      <input type="text" name="name" id="name_textbox" maxlength="20" minLength="4" pattern="[A-Za-z0-9 ]+" placeholder="Name">
+      <input type="text" name="name" id="name_textbox" placeholder="Name">
     </p>
 
     <p>
@@ -55,12 +55,7 @@
           
           var name = nameTextbox.value.trim();
           
-          var xmlhttp;
-          if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp = new XMLHttpRequest();
-          } else {// code for IE6, IE5
-            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-          }
+          var xmlhttp = new XMLHttpRequest();
           
           queryJSON.name = name;
           xmlhttp.open("GET",

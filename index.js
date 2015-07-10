@@ -5,7 +5,8 @@ var app = express();
 var anyDB = require('any-db')
 var cool = require("cool-ascii-faces");
 
-var MAX_NAME_LENGTH = 16;
+var MAX_NAME_LENGTH = 17;
+var MIN_NAME_LENGTH = 4;
 
 
 app.use(express.static(__dirname + "/public"));
@@ -25,16 +26,25 @@ function isStringBlank(str){
   return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
-// app.get("/db", function (request, response) {
-//   pool.query("select * from users;", function(err, result) {
-//     if (err) {
-//       console.error(err);
-//       response.json({error: "sql error. oops"});
-//     } else {
-//       response.send(result.rows[0].name);
-//     }
-//   });
-// });
+function respondWithLeaderboard(response, partialJSONresponse) {
+  var num_high_scores = 9;
+  pool.query("select s.score, s.level, s.datetime, u.name " +
+             "from scores as s, users as u where " +
+             "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";", 
+             function (err, selectResult) {
+    if (err) {
+      console.error(err);
+      response.json({error: "sql error 4. oops"});
+    } else {
+      var scoresJSON = {};
+      scoresJSON.scores = [];
+      for (var i = 0; i < num_high_scores; i++) {
+        scoresJSON.scores[i] = selectResult.rows[i];
+      }
+      response.json(scoresJSON);
+    }
+  });
+}
 
 app.get("/set_name", function(request, response) {
   if (request.query.id === null || request.query.id === undefined ||
@@ -43,9 +53,14 @@ app.get("/set_name", function(request, response) {
     return;
   }
 
-  var newName = request.query.name.replace(/[^A-Za-z0-9 ]/g, "");
-  if (newName.length > MAX_NAME_LENGTH) {
-    response.json({error: "Name must be less than 16 characters"});
+  var newName = request.query.name.trim();
+  var res = newName.match(/[^A-Za-z0-9 ]/g);
+  if (res !== null) {
+    response.json({error: "Your leaderboard name must not contain any special characters. Only numbers and letters are allowed."});
+    return;
+  }
+  if (newName.length > MAX_NAME_LENGTH || newName.length < MIN_NAME_LENGTH) {
+    response.json({error: "Your leaderboard name must be between " + MIN_NAME_LENGTH + " and " + MAX_NAME_LENGTH + " characters in length"});
     return;
   }
 
@@ -87,11 +102,13 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            response.json({
+            var partialJSONresponse = {
               id: updateResult.rows[0].id,
               name: updateResult.rows[0].name,
               account_token: updateResult.rows[0].account_token
-            });
+            };
+
+            respondWithLeaderboard(response, partialJSONresponse);
           }
         });
       } else if (result.rows.length == 0 && name_in_use_by_id == 0) {
@@ -102,11 +119,13 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 4. oops"});
           } else {
-            response.json({
+            var partialJSONresponse = {
               id: insertResult.rows[0].id,
               name: insertResult.rows[0].name,
               account_token: insertResult.rows[0].account_token
-            });
+            };
+
+            respondWithLeaderboard(response, partialJSONresponse);
           }
         });
       } else {
@@ -179,23 +198,7 @@ app.get("/update_scores", function (request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            var num_high_scores = 9;
-            pool.query("select s.score, s.level, s.datetime, u.name " +
-                       "from scores as s, users as u where " +
-                       "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";", 
-                       function (err, selectResult) {
-              if (err) {
-                console.error(err);
-                response.json({error: "sql error 4. oops"});
-              } else {
-                var scoresJSON = {};
-                scoresJSON.scores = [];
-                for (var i = 0; i < num_high_scores; i++) {
-                  scoresJSON.scores[i] = selectResult.rows[i];
-                }
-                response.json(scoresJSON);
-              }
-            });
+            respondWithLeaderboard(response, {});
           }
         });
       });
@@ -205,5 +208,4 @@ app.get("/update_scores", function (request, response) {
     }
   });
 });
-
 
