@@ -179,7 +179,7 @@ app.get("/update_scores", function (request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            var num_high_scores = 5;
+            var num_high_scores = 9;
             pool.query("select s.score, s.level, s.datetime, u.name " +
                        "from scores as s, users as u where " +
                        "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";", 
