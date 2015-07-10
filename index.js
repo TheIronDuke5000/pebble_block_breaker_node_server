@@ -110,7 +110,6 @@ app.get("/set_name", function(request, response) {
               name: updateResult.rows[0].name,
               account_token: updateResult.rows[0].account_token
             };
-
             respondWithLeaderboard(response, partialJSONresponse);
           }
         });
@@ -127,7 +126,6 @@ app.get("/set_name", function(request, response) {
               name: insertResult.rows[0].name,
               account_token: insertResult.rows[0].account_token
             };
-
             respondWithLeaderboard(response, partialJSONresponse);
           }
         });
@@ -140,8 +138,7 @@ app.get("/set_name", function(request, response) {
 
 
 app.get("/update_scores", function (request, response) {
-  if (request.query.id === null || request.query.id === undefined || 
-      request.query.scores === null || request.query.scores === undefined) {
+  if (request.query.scores === null || request.query.scores === undefined) {
     response.json({error: "Improper query string"});
     return;
   }
@@ -163,6 +160,11 @@ app.get("/update_scores", function (request, response) {
     account_token = request.query.account_token;
   }
 
+  var user_id = 0;
+  if (request.query.id !== null && request.query.id !== undefined) {
+    user_id = Number(request.query.id);
+  }
+
   // TODO: figure out a way to sanitize the account token without destroying it. 
   // if it is left as is the server is vulnerable to SQL injection.
   // but i dont know the format of the account token so that i dont destroy it
@@ -170,13 +172,13 @@ app.get("/update_scores", function (request, response) {
   account_token = account_token.replace(/[^A-Za-z0-9 ]/g, "");
 
   pool.query("select * from users where (account_token<>'' and account_token='" + account_token +
-             "') or id=" + request.query.id +";", function(err, result) {
+             "') or id=" + user_id +";", function(err, result) {
     if (err) {
       console.error(err);
       response.json({error: "sql error 1. oops"});
     } else if (result.rows.length > 0) {
       var insertQueryString = "insert into scores (user_id, score, datetime, level) values ";
-      var deleteQueryString = "delete from scores where user_id=" + request.query.id + " and datetime in (";
+      var deleteQueryString = "delete from scores where user_id=" + result.rows[0].id + " and datetime in (";
 
       for (var i = 0; i < scores.length; i++) {
         insertQueryString = insertQueryString + "(" + result.rows[0].id + ", " + 
@@ -201,7 +203,12 @@ app.get("/update_scores", function (request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            respondWithLeaderboard(response, {});
+            var partialJSONresponse = {
+              id: result.rows[0].id,
+              name: result.rows[0].name,
+              account_token: result.rows[0].account_token
+            };
+            respondWithLeaderboard(response, partialJSONresponse);
           }
         });
       });
