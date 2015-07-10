@@ -36,12 +36,15 @@ function respondWithLeaderboard(response, partialJSONresponse) {
       console.error(err);
       response.json({error: "sql error 4. oops"});
     } else {
-      var scoresJSON = {};
-      scoresJSON.scores = [];
-      for (var i = 0; i < num_high_scores; i++) {
-        scoresJSON.scores[i] = selectResult.rows[i];
+      var fullJSONresponse = partialJSONresponse;
+      if (fullJSONresponse === null || fullJSONresponse === undefined) {
+        fullJSONresponse = {};
       }
-      response.json(scoresJSON);
+      fullJSONresponse.scores = [];
+      for (var i = 0; i < num_high_scores; i++) {
+        fullJSONresponse.scores[i] = selectResult.rows[i];
+      }
+      response.json(fullJSONresponse);
     }
   });
 }

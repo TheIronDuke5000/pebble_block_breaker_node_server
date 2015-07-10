@@ -65,12 +65,12 @@
             var responseStatusString = "Error";
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
               var responseJSON = JSON.parse(xmlhttp.responseText);
-              if (!isStringBlank(responseJSON.name)) {
+              if (!isStringBlank(responseJSON.error)) {
+                responseStatusString = responseJSON.error;
+              } else if (!isStringBlank(responseJSON.name)) {
                 responseStatusString = "Success";
                 var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(responseJSON));
                 document.location = location;
-              } else if (!isStringBlank(responseJSON.error)) {
-                responseStatusString = responseJSON.error;
               }
             }
             console.log(responseStatusString);
