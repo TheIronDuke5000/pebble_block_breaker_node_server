@@ -106,7 +106,7 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            pool.query("insert into logs (user_id, action) values (" + updateResult.rows[0].id + ", 'change_name')");
+            pool.query("insert into logs (user_id, action, datetime) values (" + updateResult.rows[0].id + ", 'change_name', now());");
             var partialJSONresponse = {
               id: updateResult.rows[0].id,
               name: updateResult.rows[0].name,
@@ -123,7 +123,7 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 4. oops"});
           } else {
-            pool.query("insert into logs (user_id, action) values (" + insertResult.rows[0].id + ", 'new_user')");
+            pool.query("insert into logs (user_id, action, datetime) values (" + insertResult.rows[0].id + ", 'new_user', now());");
             var partialJSONresponse = {
               id: insertResult.rows[0].id,
               name: insertResult.rows[0].name,
@@ -206,7 +206,7 @@ app.get("/update_scores", function (request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
-            pool.query("insert into logs (user_id, action) values (" + result.rows[0].id + ", 'update_scores')");
+            pool.query("insert into logs (user_id, action, datetime) values (" + result.rows[0].id + ", 'update_scores', now());");
             var partialJSONresponse = {
               id: result.rows[0].id,
               name: result.rows[0].name,
@@ -223,3 +223,24 @@ app.get("/update_scores", function (request, response) {
   });
 });
 
+app.get("/logs", function (request, response) {
+  pool.query("select l.id, l.action, l.user_id, l.datetime, u.account_token, u.name from users u, logs l where u.id=l.user_id order by l.id desc limit 100;", function(err, result) {
+    if (err) {
+      console.error(err);
+      response.json({error: "sql error 2. oops"});
+    } else {
+      response.json(result.rows);
+    }
+  }
+}
+
+app.get("/leaderboard", function (request, response) {
+  pool.query("select u.name, s.score, s.datetime, s.level from users u, scores s where u.id=s.user_id order by s.score desc limit 100;", function(err, result) {
+    if (err) {
+      console.error(err);
+      response.json({error: "sql error 2. oops"});
+    } else {
+      response.json(result.rows);
+    }
+  }
+}
