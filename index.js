@@ -231,8 +231,8 @@ app.get("/logs", function (request, response) {
     } else {
       response.json(result.rows);
     }
-  }
-}
+  });
+});
 
 app.get("/leaderboard", function (request, response) {
   pool.query("select u.name, s.score, s.datetime, s.level from users u, scores s where u.id=s.user_id order by s.score desc limit 100;", function(err, result) {
@@ -242,5 +242,5 @@ app.get("/leaderboard", function (request, response) {
     } else {
       response.json(result.rows);
     }
-  }
-}
+  });
+});
