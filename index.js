@@ -28,9 +28,10 @@ function isStringBlank(str){
 
 function respondWithLeaderboard(response, partialJSONresponse) {
   var num_high_scores = 9;
-  pool.query("select s.score, s.level, s.datetime, u.name " +
-             "from scores as s, users as u where " +
-             "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";", 
+  pool.query("select s.score, s.level, s.datetime, u.name, " +
+             "(select count(*)+1 from scores si where si.score > s.score) as rank " +
+             "from scores s, users u where " +
+             "s.user_id=u.id order by s.score desc limit " + num_high_scores + ";",
              function (err, selectResult) {
     if (err) {
       console.error(err);
@@ -105,6 +106,7 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
+            pool.query("insert into logs (user_id, action) values (" + result.rows[0].id + ", change_name)");
             var partialJSONresponse = {
               id: updateResult.rows[0].id,
               name: updateResult.rows[0].name,
@@ -121,6 +123,7 @@ app.get("/set_name", function(request, response) {
             console.error(err);
             response.json({error: "sql error 4. oops"});
           } else {
+            pool.query("insert into logs (user_id, action) values (" + result.rows[0].id + ", new_user)");
             var partialJSONresponse = {
               id: insertResult.rows[0].id,
               name: insertResult.rows[0].name,
@@ -203,6 +206,7 @@ app.get("/update_scores", function (request, response) {
             console.error(err);
             response.json({error: "sql error 3. oops"});
           } else {
+            pool.query("insert into logs (user_id, action) values (" + result.rows[0].id + ", update_scores)");
             var partialJSONresponse = {
               id: result.rows[0].id,
               name: result.rows[0].name,
