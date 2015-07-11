@@ -19,7 +19,7 @@ app.listen(app.get("port"), function() {
 
 var pool = anyDB.createPool(process.env.DATABASE_URL, {
   min: 0,  // Minimum connections
-  max: 10 // Maximum connections
+  max: 100 // Maximum connections
 });
 
 function isStringBlank(str){
